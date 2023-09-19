@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -12,42 +13,60 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Nom pelicula"
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:textSize="34sp" />
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="285dp"
+        android:layout_gravity="center_horizontal"
         tools:srcCompat="@tools:sample/avatars" />
 
     <RadioGroup
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:baselineAligned="false">
 
         <RadioButton
-            android:id="@+id/radioButton1"
-            android:layout_width="match_parent"
+            android:id="@+id/OpcioRadioButton1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RadioButton"
-            android:textAlignment="viewStart" />
+            android:layout_gravity="center"
+            android:checked="true"
+            android:text="Opcio1"
+            android:textAlignment="viewStart"
+            android:textSize="20sp" />
 
         <RadioButton
-            android:id="@+id/radioButton2"
-            android:layout_width="match_parent"
+            android:id="@+id/OpcioRadioButton2"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RadioButton" />
+            android:layout_gravity="center"
+            android:text="Opcio2"
+            android:textSize="20sp" />
 
         <RadioButton
-            android:id="@+id/radioButton3"
-            android:layout_width="match_parent"
+            android:id="@+id/OpcioRadioButton3"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RadioButton" />
+            android:layout_gravity="center"
+            android:text="Opcio3"
+            android:textSize="20sp" />
 
         <RadioButton
-            android:id="@+id/radioButton4"
-            android:layout_width="match_parent"
+            android:id="@+id/OpcioRadioButton4"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="RadioButton" />
+            android:layout_gravity="center"
+            android:text="Opcio4"
+            android:textSize="20sp" />
+
     </RadioGroup>
+
+    <Button
+        android:id="@+id/testButton"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:text="Test" />
 </LinearLayout>
