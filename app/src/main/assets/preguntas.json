@@ -1,0 +1,124 @@
+{
+    "preguntes": [
+        {
+            "id": 1,
+            "pregunta": "Emoji: la película",
+            "respostes": [
+                {
+                    "id": 1,
+                    "any": "2017"
+                },
+                {
+                    "id": 2,
+                    "any": "2019"
+                },
+                {
+                    "id": 3,
+                    "any": "2020"
+                },
+                {
+                    "id": 4,
+                    "any": "2014"
+                }
+            ],
+            "resposta_correcta": 1,
+            "imatge": "https://exemple.com/bmw.jpg"
+        },
+        {
+            "id": 2,
+            "pregunta": "El ciempiés humano",
+            "respostes": [
+                {
+                    "id": 1,
+                    "any": "2005"
+                },
+                {
+                    "id": 2,
+                    "any": "2013"
+                },
+                {
+                    "id": 3,
+                    "any": "2004"
+                },
+                {
+                    "id": 4,
+                    "any": "2009"
+                }
+            ],
+            "resposta_correcta": 4,
+            "imatge": "https://exemple.com/bmw.jpg"
+        },
+        {
+            "id": 3,
+            "pregunta": "Scarface",
+            "respostes": [
+                {
+                    "id": 1,
+                    "any": "1983"
+                },
+                {
+                    "id": 2,
+                    "any": "1993"
+                },
+                {
+                    "id": 3,
+                    "any": "1981"
+                },
+                {
+                    "id": 4,
+                    "any": "1991"
+                }
+            ],
+            "resposta_correcta": 1,
+            "imatge": "https://exemple.com/bmw.jpg"
+        },
+        {
+            "id": 4,
+            "pregunta": "Insidious",
+            "respostes": [
+                {
+                    "id": 1,
+                    "any": "2013"
+                },
+                {
+                    "id": 2,
+                    "any": "2010"
+                },
+                {
+                    "id": 3,
+                    "any": "2015"
+                },
+                {
+                    "id": 4,
+                    "any": "2014"
+                }
+            ],
+            "resposta_correcta": 2,
+            "imatge": "https://exemple.com/bmw.jpg"
+        },
+        {
+            "id": 5,
+            "pregunta": "Los odiosos ocho",
+            "respostes": [
+                {
+                    "id": 1,
+                    "any": "2017"
+                },
+                {
+                    "id": 2,
+                    "any": "2018"
+                },
+                {
+                    "id": 3,
+                    "any": "2014"
+                },
+                {
+                    "id": 4,
+                    "any": "2015"
+                }
+            ],
+            "resposta_correcta": 4,
+            "imatge": "https://exemple.com/bmw.jpg"
+        }
+    ]
+}
