@@ -25,6 +25,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    List<Pregunta> preguntas = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +63,15 @@ public class MainActivity extends AppCompatActivity {
                 // to get Context
                 Context context = getApplicationContext();
                 // message to display
-                String text = "Toast message";
+                ArrayList<Integer> respostes_buides = new ArrayList();
+                Log.e("data",""+preguntas.size());
+                for(Pregunta pregunta : preguntas){
+                    int id = pregunta.getRespostes_radiogroup().getCheckedRadioButtonId();
+                    if (id == -1){
+                        respostes_buides.add(pregunta.getId());
+                    }
+                }
+                String text = "Falten les respostes: " + respostes_buides.toString();
                 // toast time duration, can also set manual value
                 int duration = Toast.LENGTH_SHORT;
                 Toast toast = Toast.makeText(context, text, duration);
@@ -93,25 +102,11 @@ public class MainActivity extends AppCompatActivity {
     public void crearPregunta(String nomPeli, List respostestext){
         LinearLayout layout = findViewById(R.id.linearlayout);
 
-        TextView peli= new TextView(this);
-        peli.setText(nomPeli);
-        peli.setTextSize(34);
-        peli.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        layout.addView(peli);
+        Pregunta pregunta = new Pregunta(nomPeli,respostestext,this);
+        preguntas.add(pregunta);
+        layout.addView(pregunta.getNom_textview());
+        layout.addView(pregunta.getRespostes_radiogroup());
 
-        RadioGroup radiogroup = new RadioGroup(this);
-        radiogroup.setGravity(Gravity.CENTER);
-        layout.addView(radiogroup);
-
-        RadioButton[] respuestas = new RadioButton[respostestext.size()];
-        for(int i =0; i<respostestext.size(); i++) {
-            respuestas[i] = new RadioButton(this);
-            respuestas[i].setText(respostestext.get(i).toString());
-            respuestas[i].setTextSize(20);
-            respuestas[i].setTextAlignment(View.TEXT_ALIGNMENT_GRAVITY);
-            radiogroup.addView(respuestas[i]);
-
-        }
     }
 }
 
