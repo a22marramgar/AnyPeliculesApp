@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
 
     List<Pregunta> preguntas = new ArrayList<>();
 
+    private int[] respostesCorrectes = new int[10];
+
     private int currentPregunta = 0;
 
     int[] selectedRespostes = new int[10];
@@ -62,7 +64,10 @@ public class MainActivity extends AppCompatActivity {
 
                 }
 
-                crearPregunta(pregunta.getString("pregunta"),list,pregunta.getString("imatge"));
+                crearPregunta(pregunta.getString("pregunta"),
+                        list,
+                        Integer.parseInt(pregunta.getString("resposta_correcta")),
+                        pregunta.getString("imatge"));
             }
         }catch (JSONException e){
             e.printStackTrace();
@@ -82,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 selectedRespostes[currentPregunta] = radioGroup.getCheckedRadioButtonId();
                 if(currentPregunta<preguntas.size()-1){
-                    Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
+                    //Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
                     currentPregunta++;
                     if(currentPregunta==preguntas.size()-1) nextButton.setText("Enviar");
                     radioGroup.check(selectedRespostes[currentPregunta]);
@@ -106,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 selectedRespostes[currentPregunta] = radioGroup.getCheckedRadioButtonId();
-                Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
+                //Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
                 currentPregunta--;
                 radioGroup.check(selectedRespostes[currentPregunta]);
                 nextButton.setText("Siguiente");
@@ -141,6 +146,33 @@ public class MainActivity extends AppCompatActivity {
 
     private void finishGame() {
         //TODO end the game
+        int contadorCorrectas = 0;
+        int respuestaCorrecta = 0;
+        for(int i = 0; i<selectedRespostes.length; i++){
+            switch (preguntas.get(i).getRespostaCorrecta()){
+                case 1:
+                    respuestaCorrecta = RB1_ID;
+                    break;
+                case 2:
+                    respuestaCorrecta = RB2_ID;
+                    break;
+                case 3:
+                    respuestaCorrecta = RB3_ID;
+                    break;
+                case 4:
+                    respuestaCorrecta = RB4_ID;
+                    break;
+            }
+            if(selectedRespostes[i] == respuestaCorrecta){
+                contadorCorrectas++;
+            }else{
+                Log.e("Mal", preguntas.get(i).getNom()
+                        +", se esperaba "+respuestaCorrecta
+                        +", "+preguntas.get(i).getRespostaCorrecta()
+                        +", seleccionado "+selectedRespostes[i]);
+            }
+        }
+        Log.e("Correctas", String.valueOf(contadorCorrectas));
     }
 
     private void updateView() {
@@ -181,9 +213,9 @@ public class MainActivity extends AppCompatActivity {
         return json;
     }
 
-    public void crearPregunta(String nomPeli, List<String> respostestext, String URLImage){
+    public void crearPregunta(String nomPeli, List<String> respostestext, int resposta_correcta,String URLImage){
 
-        Pregunta pregunta = new Pregunta(nomPeli,respostestext, URLImage);
+        Pregunta pregunta = new Pregunta(nomPeli,respostestext, resposta_correcta,URLImage);
         preguntas.add(pregunta);
     }
 
