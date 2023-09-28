@@ -2,17 +2,16 @@ package com.example.anypeliculesapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,6 +25,24 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     List<Pregunta> preguntas = new ArrayList<>();
+
+    private int currentPregunta = 0;
+
+    int[] selectedRespostes = new int[10];
+    Button backButton;
+    Button nextButton;
+    TextView nomPeliTextView;
+    RadioGroup radioGroup;
+
+    RadioButton radioButton1;
+    RadioButton radioButton2;
+    RadioButton radioButton3;
+    RadioButton radioButton4;
+
+    private static final int RB1_ID = 2131231222;//first radio button id
+    private static final int RB2_ID = 2131231065;//second radio button id
+    private static final int RB3_ID = 2131231066;//third radio button id
+    private static final int RB4_ID = 2131231067;//fourth radio button id
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,40 +62,105 @@ public class MainActivity extends AppCompatActivity {
 
                 }
 
-                crearPregunta(pregunta.getString("pregunta"),list);
+                crearPregunta(pregunta.getString("pregunta"),list,pregunta.getString("imatge"));
             }
         }catch (JSONException e){
             e.printStackTrace();
         }
+        bindViews();
+        startGame();
+    }
 
-        Button button = new Button(this);
-        LinearLayout layout = findViewById(R.id.linearlayout);
-        button.setText("ENVIAR");
-        button.setTextSize(34);
-        layout.addView(button);
-        button.setOnClickListener(new View.OnClickListener() {
+    private void startGame() {
+        for(int i = 0; i<selectedRespostes.length; i++){
+            selectedRespostes[i] = -1;
+        }
+        updateView();
+        backButton.setEnabled(false);
+        nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                selectedRespostes[currentPregunta] = radioGroup.getCheckedRadioButtonId();
+                if(currentPregunta<preguntas.size()-1){
+                    Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
+                    currentPregunta++;
+                    if(currentPregunta==preguntas.size()-1) nextButton.setText("Enviar");
+                    radioGroup.check(selectedRespostes[currentPregunta]);
 
-                // to get Context
-                Context context = getApplicationContext();
-                // message to display
-                ArrayList<Integer> respostes_buides = new ArrayList();
-                Log.e("data",""+preguntas.size());
-                for(Pregunta pregunta : preguntas){
-                    int id = pregunta.getRespostes_radiogroup().getCheckedRadioButtonId();
-                    if (id == -1){
-                        respostes_buides.add(pregunta.getId());
-                    }
+                    updateView();
+                }else{
+                    checkRespuestas();
+
                 }
-                String text = "Falten les respostes: " + respostes_buides.toString();
-                // toast time duration, can also set manual value
-                int duration = Toast.LENGTH_SHORT;
-                Toast toast = Toast.makeText(context, text, duration);
-                // to show the toast
-                toast.show();
+                if(currentPregunta!= 0){
+                    backButton.setEnabled(true);
+                }else{
+                    backButton.setEnabled(false);
+                }
+
+
+            }
+
+        });
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                selectedRespostes[currentPregunta] = radioGroup.getCheckedRadioButtonId();
+                Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
+                currentPregunta--;
+                radioGroup.check(selectedRespostes[currentPregunta]);
+                nextButton.setText("Siguiente");
+                updateView();
+                if(currentPregunta==0){
+                    backButton.setEnabled(false);
+                }
+
             }
         });
+
+    }
+
+    private void checkRespuestas() {
+        String respostes_buides = "";
+        for(int i = 0; i<selectedRespostes.length;i++){
+            if(selectedRespostes[i] == -1){
+                respostes_buides = respostes_buides + (i+1) + " ";
+            }
+        }
+        if(!(respostes_buides.equals(""))){
+            Snackbar snackbar = Snackbar.make((RelativeLayout)findViewById(R.id.mainlayout),
+                    "Falten les respostes:\n"+respostes_buides,
+                    Snackbar.LENGTH_LONG);
+            snackbar.show();
+        }else{
+            finishGame();
+        }
+
+
+    }
+
+    private void finishGame() {
+        //TODO end the game
+    }
+
+    private void updateView() {
+        Pregunta pregunta = preguntas.get(currentPregunta);
+        nomPeliTextView.setText((currentPregunta+1)+". "+pregunta.getNom());
+        radioButton1.setText(pregunta.getRespostes().get(0).toString());
+        radioButton2.setText(pregunta.getRespostes().get(1).toString());
+        radioButton3.setText(pregunta.getRespostes().get(2).toString());
+        radioButton4.setText(pregunta.getRespostes().get(3).toString());
+    }
+
+    private void bindViews() {
+        backButton = findViewById(R.id.backButton);
+        nextButton = findViewById(R.id.nextButton);
+        nomPeliTextView = findViewById(R.id.nomPeliTextView);
+        radioGroup = findViewById(R.id.radiogroup);
+        radioButton1 = findViewById(R.id.radioButton1);
+        radioButton2 = findViewById(R.id.radioButton2);
+        radioButton3 = findViewById(R.id.radioButton3);
+        radioButton4 = findViewById(R.id.radioButton4);
     }
 
     private String loadJSONFromAsset() {
@@ -99,14 +181,11 @@ public class MainActivity extends AppCompatActivity {
         return json;
     }
 
-    public void crearPregunta(String nomPeli, List respostestext){
-        LinearLayout layout = findViewById(R.id.linearlayout);
+    public void crearPregunta(String nomPeli, List<String> respostestext, String URLImage){
 
-        Pregunta pregunta = new Pregunta(nomPeli,respostestext,this);
+        Pregunta pregunta = new Pregunta(nomPeli,respostestext, URLImage);
         preguntas.add(pregunta);
-        layout.addView(pregunta.getNom_textview());
-        layout.addView(pregunta.getRespostes_radiogroup());
-
     }
+
 }
 
