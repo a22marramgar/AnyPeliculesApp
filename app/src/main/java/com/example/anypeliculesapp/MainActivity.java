@@ -41,10 +41,6 @@ public class MainActivity extends AppCompatActivity {
     RadioButton radioButton3;
     RadioButton radioButton4;
 
-    private static final int RB1_ID = 2131231222;//first radio button id
-    private static final int RB2_ID = 2131231065;//second radio button id
-    private static final int RB3_ID = 2131231066;//third radio button id
-    private static final int RB4_ID = 2131231067;//fourth radio button id
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,12 +81,16 @@ public class MainActivity extends AppCompatActivity {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectedRespostes[currentPregunta] = radioGroup.getCheckedRadioButtonId();
+
+                //selectedRespostes[currentPregunta] = radioGroup.getCheckedRadioButtonId();
+                storeCheckedIndex();
+
+
                 if(currentPregunta<preguntas.size()-1){
                     //Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
                     currentPregunta++;
                     if(currentPregunta==preguntas.size()-1) nextButton.setText("Enviar");
-                    radioGroup.check(selectedRespostes[currentPregunta]);
+                    selectStoredCheck();
 
                     updateView();
                 }else{
@@ -110,10 +110,10 @@ public class MainActivity extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectedRespostes[currentPregunta] = radioGroup.getCheckedRadioButtonId();
+                storeCheckedIndex();
                 //Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
                 currentPregunta--;
-                radioGroup.check(selectedRespostes[currentPregunta]);
+                selectStoredCheck();
                 nextButton.setText("Siguiente");
                 updateView();
                 if(currentPregunta==0){
@@ -123,6 +123,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void selectStoredCheck() {
+        radioGroup.clearCheck();
+        if(selectedRespostes[currentPregunta] != -1) {
+            RadioButton radiobutton = (RadioButton) radioGroup.getChildAt(selectedRespostes[currentPregunta]);
+            radiobutton.setChecked(true);
+        }
+    }
+
+    private void storeCheckedIndex() {
+        View radiobutton = radioGroup.findViewById(radioGroup.getCheckedRadioButtonId());
+        if(radiobutton == null){
+            selectedRespostes[currentPregunta] = -1;
+        }else{
+            selectedRespostes[currentPregunta] = radioGroup.indexOfChild(radiobutton);
+        }
     }
 
     private void checkRespuestas() {
@@ -147,29 +164,13 @@ public class MainActivity extends AppCompatActivity {
     private void finishGame() {
         //TODO end the game
         int contadorCorrectas = 0;
-        int respuestaCorrecta = 0;
         for(int i = 0; i<selectedRespostes.length; i++){
-            switch (preguntas.get(i).getRespostaCorrecta()){
-                case 1:
-                    respuestaCorrecta = RB1_ID;
-                    break;
-                case 2:
-                    respuestaCorrecta = RB2_ID;
-                    break;
-                case 3:
-                    respuestaCorrecta = RB3_ID;
-                    break;
-                case 4:
-                    respuestaCorrecta = RB4_ID;
-                    break;
-            }
-            if(selectedRespostes[i] == respuestaCorrecta){
+            if(selectedRespostes[i]+1 == preguntas.get(i).getRespostaCorrecta()){
                 contadorCorrectas++;
             }else{
                 Log.e("Mal", preguntas.get(i).getNom()
-                        +", se esperaba "+respuestaCorrecta
                         +", "+preguntas.get(i).getRespostaCorrecta()
-                        +", seleccionado "+selectedRespostes[i]);
+                        +", seleccionado "+(selectedRespostes[i]+1));
             }
         }
         Log.e("Correctas", String.valueOf(contadorCorrectas));
