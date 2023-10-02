@@ -2,10 +2,15 @@ package com.example.anypeliculesapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
@@ -19,6 +24,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     RadioButton radioButton2;
     RadioButton radioButton3;
     RadioButton radioButton4;
+
+    ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,9 +192,14 @@ public class MainActivity extends AppCompatActivity {
         radioButton2.setText(pregunta.getRespostes().get(1).toString());
         radioButton3.setText(pregunta.getRespostes().get(2).toString());
         radioButton4.setText(pregunta.getRespostes().get(3).toString());
+
+        //Image
+        new DownloadImageTask((ImageView) findViewById(R.id.imageView))
+                .execute(pregunta.getURLImage());
     }
 
     private void bindViews() {
+        Typeface font = Typeface.createFromAsset(getAssets(), "BungeeLayers-Outline.otf");
         backButton = findViewById(R.id.backButton);
         nextButton = findViewById(R.id.nextButton);
         nomPeliTextView = findViewById(R.id.nomPeliTextView);
@@ -194,6 +208,11 @@ public class MainActivity extends AppCompatActivity {
         radioButton2 = findViewById(R.id.radioButton2);
         radioButton3 = findViewById(R.id.radioButton3);
         radioButton4 = findViewById(R.id.radioButton4);
+        nomPeliTextView.setTypeface(font);
+        radioButton1.setTypeface(font);
+        radioButton2.setTypeface(font);
+        radioButton3.setTypeface(font);
+        radioButton4.setTypeface(font);
     }
 
     private String loadJSONFromAsset() {
@@ -220,5 +239,31 @@ public class MainActivity extends AppCompatActivity {
         preguntas.add(pregunta);
     }
 
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
+
 }
+
 
