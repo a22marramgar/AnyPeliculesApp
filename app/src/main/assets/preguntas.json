@@ -22,7 +22,7 @@
                 }
             ],
             "resposta_correcta": 1,
-            "imatge": "https://exemple.com/bmw.jpg"
+            "imatge": "https://www.newdvdreleasedates.com/images/posters/large/the-emoji-movie-in-3d-2017-03.jpg"
         },
         {
             "id": 2,
@@ -46,7 +46,7 @@
                 }
             ],
             "resposta_correcta": 4,
-            "imatge": "https://exemple.com/bmw.jpg"
+            "imatge": "https://i.pinimg.com/736x/5b/93/58/5b9358583c94767f9d63a120a87ae2ba--horror-movie-posters-horror-films.jpg"
         },
         {
             "id": 3,
@@ -70,7 +70,7 @@
                 }
             ],
             "resposta_correcta": 1,
-            "imatge": "https://exemple.com/bmw.jpg"
+            "imatge": "https://wallpaperaccess.com/full/3378252.jpg"
         },
         {
             "id": 4,
@@ -94,7 +94,7 @@
                 }
             ],
             "resposta_correcta": 2,
-            "imatge": "https://exemple.com/bmw.jpg"
+            "imatge": "https://flxt.tmsimg.com/assets/p8494407_p_v10_ak.jpg"
         },
         {
             "id": 5,
@@ -122,7 +122,7 @@
         },
         {
             "id": 6,
-            "pregunta": "Los odiosos nueve",
+            "pregunta": "Hereditary",
             "respostes": [
                 {
                     "id": 1,
@@ -130,27 +130,27 @@
                 },
                 {
                     "id": 2,
-                    "any": "2018"
+                    "any": "2012"
                 },
                 {
                     "id": 3,
-                    "any": "2014"
+                    "any": "2015"
                 },
                 {
                     "id": 4,
-                    "any": "2015"
+                    "any": "2018"
                 }
             ],
             "resposta_correcta": 4,
-            "imatge": "https://i.pinimg.com/736x/fb/15/06/fb150672851f2d17efbb9dacf71a0666.jpg"
+            "imatge": "https://i1.wp.com/bloody-disgusting.com/wp-content/uploads/2018/05/hereditary-poster.jpg"
         },
         {
             "id": 7,
-            "pregunta": "Los odiosos diez",
+            "pregunta": "Avengers: Infinity War",
             "respostes": [
                 {
                     "id": 1,
-                    "any": "2017"
+                    "any": "2014"
                 },
                 {
                     "id": 2,
@@ -158,87 +158,87 @@
                 },
                 {
                     "id": 3,
-                    "any": "2014"
+                    "any": "2020"
                 },
                 {
                     "id": 4,
-                    "any": "2015"
+                    "any": "2019"
                 }
             ],
-            "resposta_correcta": 4,
-            "imatge": "https://i.pinimg.com/736x/fb/15/06/fb150672851f2d17efbb9dacf71a0666.jpg"
+            "resposta_correcta": 2,
+            "imatge": "https://screenphiles.files.wordpress.com/2018/04/img_0071.jpg?w=1512"
         },
         {
             "id": 8,
-            "pregunta": "Los odiosos once",
+            "pregunta": "Mortal Kombat",
             "respostes": [
                 {
                     "id": 1,
-                    "any": "2017"
+                    "any": "1995"
                 },
                 {
                     "id": 2,
-                    "any": "2018"
+                    "any": "2023"
                 },
                 {
                     "id": 3,
-                    "any": "2014"
+                    "any": "2010"
                 },
                 {
                     "id": 4,
                     "any": "2015"
                 }
             ],
-            "resposta_correcta": 4,
-            "imatge": "https://i.pinimg.com/736x/fb/15/06/fb150672851f2d17efbb9dacf71a0666.jpg"
+            "resposta_correcta": 1,
+            "imatge": "https://image.tmdb.org/t/p/original/9YhpvhhvLrtL1wlwEfpVL16GI9d.jpg"
         },
         {
             "id": 9,
-            "pregunta": "Los odiosos doce",
+            "pregunta": "La naranja mecánica",
             "respostes": [
                 {
                     "id": 1,
-                    "any": "2017"
+                    "any": "1992"
                 },
                 {
                     "id": 2,
-                    "any": "2018"
+                    "any": "1965"
                 },
                 {
                     "id": 3,
-                    "any": "2014"
+                    "any": "1984"
                 },
                 {
                     "id": 4,
-                    "any": "2015"
+                    "any": "1971"
                 }
             ],
             "resposta_correcta": 4,
-            "imatge": "https://i.pinimg.com/736x/fb/15/06/fb150672851f2d17efbb9dacf71a0666.jpg"
+            "imatge": "https://i.pinimg.com/originals/6f/c9/35/6fc9354fdfb10c81570bcd01c3a5abfa.jpg"
         },
         {
             "id": 10,
-            "pregunta": "Los odiosos trece",
+            "pregunta": "Monstruos S.A",
             "respostes": [
                 {
                     "id": 1,
-                    "any": "2017"
+                    "any": "1999"
                 },
                 {
                     "id": 2,
-                    "any": "2018"
+                    "any": "2013"
                 },
                 {
                     "id": 3,
-                    "any": "2014"
+                    "any": "2007"
                 },
                 {
                     "id": 4,
-                    "any": "2015"
+                    "any": "2001"
                 }
             ],
             "resposta_correcta": 4,
-            "imatge": "https://i.pinimg.com/736x/fb/15/06/fb150672851f2d17efbb9dacf71a0666.jpg"
+            "imatge": "https://4.bp.blogspot.com/_XLd94lk9nHo/TREpFFLqABI/AAAAAAAAAN8/HYIU9OQBQrI/s1600/Monstruos_SA.jpg"
         }
     ]
 }
