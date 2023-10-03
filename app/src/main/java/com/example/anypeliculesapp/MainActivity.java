@@ -2,20 +2,29 @@ package com.example.anypeliculesapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.shape.CornerFamily;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
@@ -48,7 +57,11 @@ public class MainActivity extends AppCompatActivity {
     RadioButton radioButton3;
     RadioButton radioButton4;
 
-    ImageView imageView;
+    ShapeableImageView imageView;
+
+    int cornerFamily= CornerFamily.ROUNDED,topLeft=0,topRight=0,bottomLeft=0,bottomRight=0; //image corners
+
+    private int segundosCountdown = 30;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        startAnimation();
 
     }
 
@@ -199,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-        Typeface font = Typeface.createFromAsset(getAssets(), "BungeeLayers-Outline.otf");
+        Typeface font = Typeface.createFromAsset(getAssets(), "Montserrat-Bold.otf");
         backButton = findViewById(R.id.backButton);
         nextButton = findViewById(R.id.nextButton);
         nomPeliTextView = findViewById(R.id.nomPeliTextView);
@@ -213,6 +227,12 @@ public class MainActivity extends AppCompatActivity {
         radioButton2.setTypeface(font);
         radioButton3.setTypeface(font);
         radioButton4.setTypeface(font);
+        nextButton.setTypeface(font);
+        backButton.setTypeface(font);
+
+        imageView = findViewById(R.id.imageView);
+        imageView.setShapeAppearanceModel(imageView.getShapeAppearanceModel().toBuilder()
+                .setAllCorners(cornerFamily,40).build());
     }
 
     private String loadJSONFromAsset() {
@@ -262,6 +282,29 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Bitmap result) {
             bmImage.setImageBitmap(result);
         }
+    }
+
+    private void startAnimation(){
+        ProgressBar mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mProgressBar.setMax(nomPeliTextView.getMaxWidth());
+        ObjectAnimator progressAnimator = ObjectAnimator.ofInt(mProgressBar, "progress", 0, mProgressBar.getMax());
+        progressAnimator.setDuration(segundosCountdown*1000);
+        progressAnimator.setInterpolator(new LinearInterpolator());
+        progressAnimator.start();
+
+        int colorFrom = getResources().getColor(R.color.green);
+        int colorTo = getResources().getColor(R.color.strong_red);
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+        colorAnimation.setDuration(segundosCountdown*1000); // milliseconds
+        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                mProgressBar.setProgressTintList(ColorStateList.valueOf((int) animator.getAnimatedValue()));
+            }
+
+        });
+        colorAnimation.start();
     }
 
 }
