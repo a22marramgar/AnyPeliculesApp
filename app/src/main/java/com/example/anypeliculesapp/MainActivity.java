@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,11 +49,11 @@ public class MainActivity extends AppCompatActivity {
 
     List<Pregunta> preguntas = new ArrayList<>();
 
-    private int[] respostesCorrectes = new int[10];
+    private int[] respostesCorrectes = new int[20];
 
     private int currentPregunta = 0;
 
-    int[] selectedRespostes = new int[10];
+    int[] selectedRespostes = new int[20];
     Button backButton;
     Button nextButton;
     TextView nomPeliTextView;
@@ -87,11 +89,19 @@ public class MainActivity extends AppCompatActivity {
         Log.e("api","espero respuesta");
         call.enqueue(new Callback<JsonResponseModel>() {
 
+
             @Override
             public void onResponse(Call<JsonResponseModel> call, Response<JsonResponseModel> response) {
                 if (response.isSuccessful()) {
                     // Procesar la respuesta exitosa aquí
                     JsonResponseModel jsonResponse = response.body();
+                    for (Pregunta1 pregunta : jsonResponse.getPreguntes()) {
+                        List<String> respostes = new ArrayList<>();
+                        for(int i = 0; i<pregunta.getRespostes().size();i++){
+                            respostes.add(pregunta.getRespostes().get(i).getAny());
+                        }
+                        crearPregunta(pregunta.getPregunta(), respostes,pregunta.getResposta_correcta(),pregunta.getImatge());
+                    }
                     Log.e("body", String.valueOf(response));
 
                     // Hacer algo con jsonResponse
@@ -256,6 +266,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateView() {
+        while(preguntas.isEmpty()){
+            try {
+                Log.e("espera","estoy esperando");
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
         Pregunta pregunta = preguntas.get(currentPregunta);
         nomPeliTextView.setText((currentPregunta+1)+". "+ pregunta.getNom());
         radioButton1.setText(pregunta.getRespostes().get(0).toString());
