@@ -1,14 +1,5 @@
 package com.example.anypeliculesapp;
 
-import android.content.Context;
-import android.text.Layout;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.TextView;
-
 import java.util.List;
 
 public class Pregunta {
@@ -27,7 +18,7 @@ public class Pregunta {
         this(nom,respostes,resposta_correcta,null);
     }
 
-    public Pregunta(String nom, List<String> respostes, int resposta_correcta,String URLImage){
+    public Pregunta(String nom, List<String> respostes, int resposta_correcta, String URLImage){
         this._id = id_increment;
         id_increment++;
         this._nom = nom;

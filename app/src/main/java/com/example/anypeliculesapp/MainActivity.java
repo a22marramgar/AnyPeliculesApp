@@ -8,7 +8,6 @@ import android.animation.ValueAnimator;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -33,12 +32,18 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity {
+
+    private static ApiService apiService;
 
     List<Pregunta> preguntas = new ArrayList<>();
 
@@ -68,6 +73,44 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        configurarApi();
+        llamarApi();
+
+        leerJSON();
+        bindViews();
+        startGame();
+    }
+
+    private void llamarApi() {
+        // Realizar la llamada a getPreguntes
+        Call<JsonResponseModel> call = this.getApiService().getPreguntes();
+        Log.e("api","espero respuesta");
+        call.enqueue(new Callback<JsonResponseModel>() {
+
+            @Override
+            public void onResponse(Call<JsonResponseModel> call, Response<JsonResponseModel> response) {
+                if (response.isSuccessful()) {
+                    // Procesar la respuesta exitosa aquí
+                    JsonResponseModel jsonResponse = response.body();
+                    Log.e("body", String.valueOf(response));
+
+                    // Hacer algo con jsonResponse
+                    Log.e("api", "JSON recibido");
+                } else {
+                    // Manejar error en la respuesta
+                    Log.e("api", "error en la respuesta");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<JsonResponseModel> call, Throwable t) {
+                // Manejar error en la solicitud
+                Log.e("api", "error: "+t);
+            }
+        });
+    }
+
+    private void leerJSON() {
         try{
             JSONObject obj = new JSONObject(loadJSONFromAsset());
             JSONArray preguntes = obj.getJSONArray("preguntes");
@@ -90,8 +133,21 @@ public class MainActivity extends AppCompatActivity {
         }catch (JSONException e){
             e.printStackTrace();
         }
-        bindViews();
-        startGame();
+    }
+
+    private void configurarApi() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://apiservice-u435.onrender.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        apiService = retrofit.create(ApiService.class);
+
+
+    }
+
+    public static ApiService getApiService() {
+        return apiService;
     }
 
     private void startGame() {
@@ -201,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateView() {
         Pregunta pregunta = preguntas.get(currentPregunta);
-        nomPeliTextView.setText((currentPregunta+1)+". "+pregunta.getNom());
+        nomPeliTextView.setText((currentPregunta+1)+". "+ pregunta.getNom());
         radioButton1.setText(pregunta.getRespostes().get(0).toString());
         radioButton2.setText(pregunta.getRespostes().get(1).toString());
         radioButton3.setText(pregunta.getRespostes().get(2).toString());
@@ -249,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
-        Log.e("data",json);
+        //Log.e("data",json);
         return json;
     }
 
