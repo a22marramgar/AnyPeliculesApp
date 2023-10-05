@@ -1,5 +1,6 @@
 package com.example.anypeliculesapp;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.animation.ArgbEvaluator;
@@ -11,7 +12,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Debug;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,11 +48,11 @@ public class MainActivity extends AppCompatActivity {
 
     List<Pregunta> preguntas = new ArrayList<>();
 
-    private int[] respostesCorrectes = new int[20];
+    private int[] respostesCorrectes;
 
     private int currentPregunta = 0;
 
-    int[] selectedRespostes = new int[20];
+    int[] selectedRespostes;
     Button backButton;
     Button nextButton;
     TextView nomPeliTextView;
@@ -78,15 +77,18 @@ public class MainActivity extends AppCompatActivity {
         configurarApi();
         llamarApi();
 
-        leerJSON();
-        bindViews();
-        startGame();
+
+        //leerJSON();
+
     }
 
-    private void llamarApi() {
+    public void llamarApi() {
+
         // Realizar la llamada a getPreguntes
         Call<JsonResponseModel> call = this.getApiService().getPreguntes();
         Log.e("api","espero respuesta");
+        //Llamada sincrona (no funciona)
+        //Llamada asincrona
         call.enqueue(new Callback<JsonResponseModel>() {
 
 
@@ -100,12 +102,12 @@ public class MainActivity extends AppCompatActivity {
                         for(int i = 0; i<pregunta.getRespostes().size();i++){
                             respostes.add(pregunta.getRespostes().get(i).getAny());
                         }
-                        crearPregunta(pregunta.getPregunta(), respostes,pregunta.getResposta_correcta(),pregunta.getImatge());
+                        Pregunta addPregunta = new Pregunta(pregunta.getId(),pregunta.getPregunta(), respostes,pregunta.getResposta_correcta(),pregunta.getImatge());
+                        preguntas.add(addPregunta);
                     }
-                    Log.e("body", String.valueOf(response));
 
-                    // Hacer algo con jsonResponse
-                    Log.e("api", "JSON recibido");
+                    bindViews();
+                    startGame();
                 } else {
                     // Manejar error en la respuesta
                     Log.e("api", "error en la respuesta");
@@ -116,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(Call<JsonResponseModel> call, Throwable t) {
                 // Manejar error en la solicitud
                 Log.e("api", "error: "+t);
+                new ErrorDialogFragment().show(getSupportFragmentManager(),"ERROR_DIALOG");
             }
         });
     }
@@ -134,11 +137,12 @@ public class MainActivity extends AppCompatActivity {
                     list.add(resposta.getString("any"));
 
                 }
-
-                crearPregunta(pregunta.getString("pregunta"),
+                Pregunta addPregunta = new Pregunta(Integer.parseInt(pregunta.getString("id")),
+                        pregunta.getString("pregunta"),
                         list,
                         Integer.parseInt(pregunta.getString("resposta_correcta")),
                         pregunta.getString("imatge"));
+                preguntas.add(addPregunta);
             }
         }catch (JSONException e){
             e.printStackTrace();
@@ -161,6 +165,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startGame() {
+        respostesCorrectes = new int[preguntas.size()];
+        selectedRespostes = new int[preguntas.size()];
         for(int i = 0; i<selectedRespostes.length; i++){
             selectedRespostes[i] = -1;
         }
@@ -253,7 +259,10 @@ public class MainActivity extends AppCompatActivity {
     private void finishGame() {
         //TODO end the game
         int contadorCorrectas = 0;
+        List<RespostaModel> respuestas = new ArrayList<>();
         for(int i = 0; i<selectedRespostes.length; i++){
+            respuestas.add(new RespostaModel(preguntas.get(i).getId(),
+                    preguntas.get(i).getRespostes().get(selectedRespostes[i])));
             if(selectedRespostes[i]+1 == preguntas.get(i).getRespostaCorrecta()){
                 contadorCorrectas++;
             }else{
@@ -262,18 +271,43 @@ public class MainActivity extends AppCompatActivity {
                         +", seleccionado "+(selectedRespostes[i]+1));
             }
         }
+        RespostesModel respostesmodel = new RespostesModel(respuestas);
+        Call<RespostesModel> call = this.getApiService().postRespuestas(respostesmodel);
+
+        call.enqueue(new Callback<RespostesModel>() {
+
+
+            @Override
+            public void onResponse(Call<RespostesModel> call, Response<RespostesModel> response) {
+                if (response.isSuccessful()) {
+                    // Procesar la respuesta exitosa aquí
+                    Log.e("Respostes", "Respostes enviades");
+                } else {
+                    // Manejar error en la respuesta
+                    Log.e("api", "error en la respuesta");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RespostesModel> call, Throwable t) {
+                // Manejar error en la solicitud
+                Log.e("api", "error: "+t);
+                new ErrorDialogFragment().show(getSupportFragmentManager(),"ERROR_DIALOG");
+            }
+        });
         Log.e("Correctas", String.valueOf(contadorCorrectas));
+
     }
 
     private void updateView() {
-        while(preguntas.isEmpty()){
+        /*while(preguntas.isEmpty()){
             try {
                 Log.e("espera","estoy esperando");
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        }
+        }*/
         Pregunta pregunta = preguntas.get(currentPregunta);
         nomPeliTextView.setText((currentPregunta+1)+". "+ pregunta.getNom());
         radioButton1.setText(pregunta.getRespostes().get(0).toString());
@@ -327,9 +361,9 @@ public class MainActivity extends AppCompatActivity {
         return json;
     }
 
-    public void crearPregunta(String nomPeli, List<String> respostestext, int resposta_correcta,String URLImage){
+    public void crearPregunta(int id, String nomPeli, List<String> respostestext, int resposta_correcta,String URLImage){
 
-        Pregunta pregunta = new Pregunta(nomPeli,respostestext, resposta_correcta,URLImage);
+        Pregunta pregunta = new Pregunta(id, nomPeli,respostestext, resposta_correcta,URLImage);
         preguntas.add(pregunta);
     }
 
@@ -375,6 +409,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAnimationUpdate(ValueAnimator animator) {
                 mProgressBar.setProgressTintList(ColorStateList.valueOf((int) animator.getAnimatedValue()));
+                if(mProgressBar.getProgress() == mProgressBar.getMax()){
+                    Log.e("Time","se ha acabado el tiempo");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+
+// 2. Chain together various setter methods to set the dialog characteristics.
+                    builder.setMessage(R.string.dialog_msg)
+                            .setTitle(R.string.dialog_msg);
+
+// 3. Get the AlertDialog.
+                    AlertDialog dialog = builder.create();
+
+                }
             }
 
         });

@@ -47,7 +47,7 @@
             android:layout_centerHorizontal="false"
             android:layout_centerVertical="true"
             android:gravity="center"
-            android:text="Nom peli"
+            android:text="Cargando"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textColor="@color/white"
@@ -71,7 +71,7 @@
                 android:background="@drawable/radio_selector"
                 android:button="@color/black"
                 android:elevation="4dp"
-                android:text="respuesta1"
+                android:text="..."
                 android:textAlignment="center"
                 android:textColor="@drawable/text_color"
                 android:textSize="20dp" />
@@ -84,7 +84,7 @@
                 android:background="@drawable/radio_selector"
                 android:button="@color/black"
                 android:elevation="4dp"
-                android:text="respuesta2"
+                android:text="..."
                 android:textAlignment="center"
                 android:textColor="@drawable/text_color"
                 android:textSize="20dp" />
@@ -97,7 +97,7 @@
                 android:background="@drawable/radio_selector"
                 android:button="@color/black"
                 android:elevation="4dp"
-                android:text="respuesta3"
+                android:text="..."
                 android:textAlignment="center"
                 android:textColor="@drawable/text_color"
                 android:textSize="20dp" />
@@ -110,7 +110,7 @@
                 android:background="@drawable/radio_selector"
                 android:button="@color/black"
                 android:elevation="4dp"
-                android:text="respuesta4"
+                android:text="..."
                 android:textAlignment="center"
                 android:textColor="@drawable/text_color"
                 android:textSize="20dp" />

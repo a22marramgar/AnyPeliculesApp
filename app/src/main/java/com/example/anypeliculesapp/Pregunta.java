@@ -5,7 +5,6 @@ import java.util.List;
 public class Pregunta {
 
     private int _id;
-    private int id_increment = 1;
     private String _nom;
 
     private List<String> _respostes;
@@ -14,13 +13,10 @@ public class Pregunta {
 
     private String _URLImage;
 
-    public Pregunta(String nom, List<String> respostes, int resposta_correcta){
-        this(nom,respostes,resposta_correcta,null);
-    }
 
-    public Pregunta(String nom, List<String> respostes, int resposta_correcta, String URLImage){
-        this._id = id_increment;
-        id_increment++;
+    public Pregunta(int id, String nom, List<String> respostes, int resposta_correcta, String URLImage){
+
+        this._id = id;
         this._nom = nom;
         this._respostes = respostes;
         this._resposta_correcta = resposta_correcta;
