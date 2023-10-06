@@ -33,7 +33,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -68,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
     int cornerFamily= CornerFamily.ROUNDED,topLeft=0,topRight=0,bottomLeft=0,bottomRight=0; //image corners
 
     private int segundosCountdown = 30;
+
+    Date startDate;
+    Date endDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -259,19 +264,24 @@ public class MainActivity extends AppCompatActivity {
     private void finishGame() {
         //TODO end the game
         int contadorCorrectas = 0;
+        endDate = new Date();
         List<RespostaModel> respuestas = new ArrayList<>();
         for(int i = 0; i<selectedRespostes.length; i++){
-            respuestas.add(new RespostaModel(preguntas.get(i).getId(),
-                    preguntas.get(i).getRespostes().get(selectedRespostes[i])));
+
             if(selectedRespostes[i]+1 == preguntas.get(i).getRespostaCorrecta()){
                 contadorCorrectas++;
+                respuestas.add(new RespostaModel(preguntas.get(i).getId(),
+                        preguntas.get(i).getRespostes().get(selectedRespostes[i]), true));
             }else{
                 Log.e("Mal", preguntas.get(i).getNom()
                         +", "+preguntas.get(i).getRespostaCorrecta()
                         +", seleccionado "+(selectedRespostes[i]+1));
+                respuestas.add(new RespostaModel(preguntas.get(i).getId(),
+                        preguntas.get(i).getRespostes().get(selectedRespostes[i]), false));
             }
         }
-        RespostesModel respostesmodel = new RespostesModel(respuestas);
+        RespostesModel respostesmodel = new RespostesModel(respuestas,
+                (endDate.getTime()-startDate.getTime())/1000.0f);
         Call<RespostesModel> call = this.getApiService().postRespuestas(respostesmodel);
 
         call.enqueue(new Callback<RespostesModel>() {
@@ -425,6 +435,7 @@ public class MainActivity extends AppCompatActivity {
 
         });
         colorAnimation.start();
+        startDate = new Date();
     }
 
 }

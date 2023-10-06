@@ -4,10 +4,13 @@ import java.util.List;
 
 public class RespostesModel {
 
-    public RespostesModel(List<RespostaModel> respostes){
+    public RespostesModel(List<RespostaModel> respostes, float tiempo){
         this.respostes = respostes;
+        this.tiempo = tiempo;
     }
     private List<RespostaModel> respostes;
+
+    private float tiempo;
 
     public List<RespostaModel> getRespostes() {
         return respostes;
@@ -20,10 +23,12 @@ public class RespostesModel {
 class RespostaModel {
     private int id;
     private String any;
+    private boolean esCorrecta;
 
-    public RespostaModel(int id, String any) {
+    public RespostaModel(int id, String any, boolean esCorrecta) {
         this.id = id;
         this.any = any;
+        this.esCorrecta = esCorrecta;
     }
 
     public int getId() {
