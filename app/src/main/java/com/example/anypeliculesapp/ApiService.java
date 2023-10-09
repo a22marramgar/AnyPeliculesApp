@@ -12,5 +12,5 @@ public interface ApiService {
     Call<JsonResponseModel> getPreguntes();
 
     @POST("/postRespostes")
-    Call<RespostesModel> postRespuestas(@Body RespostesModel respostes);
+    Call<Void> postRespuestas(@Body RespostesModel respostes);
 }

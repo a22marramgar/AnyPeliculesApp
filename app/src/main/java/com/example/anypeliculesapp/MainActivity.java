@@ -2,10 +2,12 @@ package com.example.anypeliculesapp;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -82,9 +84,6 @@ public class MainActivity extends AppCompatActivity {
         configurarApi();
         llamarApi();
 
-
-        //leerJSON();
-
     }
 
     public void llamarApi() {
@@ -92,8 +91,6 @@ public class MainActivity extends AppCompatActivity {
         // Realizar la llamada a getPreguntes
         Call<JsonResponseModel> call = this.getApiService().getPreguntes();
         Log.e("api","espero respuesta");
-        //Llamada sincrona (no funciona)
-        //Llamada asincrona
         call.enqueue(new Callback<JsonResponseModel>() {
 
 
@@ -101,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<JsonResponseModel> call, Response<JsonResponseModel> response) {
                 if (response.isSuccessful()) {
                     // Procesar la respuesta exitosa aquí
+                    preguntas = new ArrayList<>();
+                    currentPregunta = 0;
                     JsonResponseModel jsonResponse = response.body();
                     for (Pregunta1 pregunta : jsonResponse.getPreguntes()) {
                         List<String> respostes = new ArrayList<>();
@@ -123,35 +122,27 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(Call<JsonResponseModel> call, Throwable t) {
                 // Manejar error en la solicitud
                 Log.e("api", "error: "+t);
-                new ErrorDialogFragment().show(getSupportFragmentManager(),"ERROR_DIALOG");
+                CustomDialogFragment dialog = new CustomDialogFragment(
+                        "No es posible conectar con el server\n Vuelve a probar en 15-30 segundos",
+                        "Reintentar",
+                        "Cancelar",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // Acción positiva personalizada
+                                // Por ejemplo, realizar alguna acción o cerrar la actividad
+                                llamarApi();
+                            }
+                        },
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // Acción negativa personalizada
+                                // Por ejemplo, realizar alguna otra acción o cerrar la actividad
+                                finishAffinity();
+                            }
+                        });
+                dialog.show(getSupportFragmentManager(), "CUSTOM_DIALOG");
             }
         });
-    }
-
-    private void leerJSON() {
-        try{
-            JSONObject obj = new JSONObject(loadJSONFromAsset());
-            JSONArray preguntes = obj.getJSONArray("preguntes");
-            for(int i = 0; i< preguntes.length(); i++){
-                JSONObject pregunta = preguntes.getJSONObject(i);
-                JSONArray respostes = pregunta.getJSONArray("respostes");
-                List<String> list = new ArrayList<String>();
-                for(int j = 0; j < respostes.length(); j++){
-                    JSONObject resposta = respostes.getJSONObject(j);
-
-                    list.add(resposta.getString("any"));
-
-                }
-                Pregunta addPregunta = new Pregunta(Integer.parseInt(pregunta.getString("id")),
-                        pregunta.getString("pregunta"),
-                        list,
-                        Integer.parseInt(pregunta.getString("resposta_correcta")),
-                        pregunta.getString("imatge"));
-                preguntas.add(addPregunta);
-            }
-        }catch (JSONException e){
-            e.printStackTrace();
-        }
     }
 
     private void configurarApi() {
@@ -194,15 +185,12 @@ public class MainActivity extends AppCompatActivity {
                     updateView();
                 }else{
                     checkRespuestas();
-
                 }
                 if(currentPregunta!= 0){
                     backButton.setEnabled(true);
                 }else{
                     backButton.setEnabled(false);
                 }
-
-
             }
 
         });
@@ -282,16 +270,36 @@ public class MainActivity extends AppCompatActivity {
         }
         RespostesModel respostesmodel = new RespostesModel(respuestas,
                 (endDate.getTime()-startDate.getTime())/1000.0f);
-        Call<RespostesModel> call = this.getApiService().postRespuestas(respostesmodel);
+        Call<Void> call = this.getApiService().postRespuestas(respostesmodel);
 
-        call.enqueue(new Callback<RespostesModel>() {
-
+        int finalContadorCorrectas = contadorCorrectas;
+        call.enqueue(new Callback<Void>() {
 
             @Override
-            public void onResponse(Call<RespostesModel> call, Response<RespostesModel> response) {
+            public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
                     // Procesar la respuesta exitosa aquí
                     Log.e("Respostes", "Respostes enviades");
+                    String mensaje = "Respuestas correctas: "+ finalContadorCorrectas +"/"+selectedRespostes.length;
+                    CustomDialogFragment dialog = new CustomDialogFragment(
+                            mensaje,
+                            "Jugar de nuevo",
+                            "Cancelar",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // Acción positiva personalizada
+                                    // Por ejemplo, realizar alguna acción o cerrar la actividad
+                                    llamarApi();
+                                }
+                            },
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // Acción negativa personalizada
+                                    // Por ejemplo, realizar alguna otra acción o cerrar la actividad
+                                    finishAffinity();
+                                }
+                            });
+                    dialog.show(getSupportFragmentManager(), "CUSTOM_DIALOG");
                 } else {
                     // Manejar error en la respuesta
                     Log.e("api", "error en la respuesta");
@@ -299,10 +307,29 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<RespostesModel> call, Throwable t) {
+            public void onFailure(Call<Void> call, Throwable t) {
                 // Manejar error en la solicitud
                 Log.e("api", "error: "+t);
-                new ErrorDialogFragment().show(getSupportFragmentManager(),"ERROR_DIALOG");
+                // Crear una instancia de CustomDialogFragment con mensajes y botones personalizados
+                CustomDialogFragment dialog = new CustomDialogFragment(
+                        "No es posible conectar con el server\n Espera unos segundos y vuelve a probar",
+                        "Reiniciar",
+                        "Cancelar",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // Acción positiva personalizada
+                                // Por ejemplo, realizar alguna acción o cerrar la actividad
+                                finishGame();
+                            }
+                        },
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // Acción negativa personalizada
+                                // Por ejemplo, realizar alguna otra acción o cerrar la actividad
+                                finishAffinity();
+                            }
+                        });
+                dialog.show(getSupportFragmentManager(), "CUSTOM_DIALOG");
             }
         });
         Log.e("Correctas", String.valueOf(contadorCorrectas));
@@ -310,14 +337,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateView() {
-        /*while(preguntas.isEmpty()){
-            try {
-                Log.e("espera","estoy esperando");
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }*/
         Pregunta pregunta = preguntas.get(currentPregunta);
         nomPeliTextView.setText((currentPregunta+1)+". "+ pregunta.getNom());
         radioButton1.setText(pregunta.getRespostes().get(0).toString());
@@ -336,6 +355,7 @@ public class MainActivity extends AppCompatActivity {
         nextButton = findViewById(R.id.nextButton);
         nomPeliTextView = findViewById(R.id.nomPeliTextView);
         radioGroup = findViewById(R.id.radiogroup);
+        radioGroup.clearCheck();
         radioButton1 = findViewById(R.id.radioButton1);
         radioButton2 = findViewById(R.id.radioButton2);
         radioButton3 = findViewById(R.id.radioButton3);
@@ -351,24 +371,6 @@ public class MainActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageView);
         imageView.setShapeAppearanceModel(imageView.getShapeAppearanceModel().toBuilder()
                 .setAllCorners(cornerFamily,40).build());
-    }
-
-    private String loadJSONFromAsset() {
-        String json;
-        try {
-            InputStream inputStream = this.getAssets().open("preguntas.json");
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-            json = new String(buffer,"UTF-8");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        //Log.e("data",json);
-        return json;
     }
 
     public void crearPregunta(int id, String nomPeli, List<String> respostestext, int resposta_correcta,String URLImage){
@@ -437,6 +439,49 @@ public class MainActivity extends AppCompatActivity {
         colorAnimation.start();
         startDate = new Date();
     }
+
+    /*private String loadJSONFromAsset() {
+        String json;
+        try {
+            InputStream inputStream = this.getAssets().open("preguntas.json");
+            int size = inputStream.available();
+            byte[] buffer = new byte[size];
+            inputStream.read(buffer);
+            inputStream.close();
+            json = new String(buffer,"UTF-8");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        //Log.e("data",json);
+        return json;
+    }*/
+    /*private void leerJSON() {
+        try{
+            JSONObject obj = new JSONObject(loadJSONFromAsset());
+            JSONArray preguntes = obj.getJSONArray("preguntes");
+            for(int i = 0; i< preguntes.length(); i++){
+                JSONObject pregunta = preguntes.getJSONObject(i);
+                JSONArray respostes = pregunta.getJSONArray("respostes");
+                List<String> list = new ArrayList<String>();
+                for(int j = 0; j < respostes.length(); j++){
+                    JSONObject resposta = respostes.getJSONObject(j);
+
+                    list.add(resposta.getString("any"));
+
+                }
+                Pregunta addPregunta = new Pregunta(Integer.parseInt(pregunta.getString("id")),
+                        pregunta.getString("pregunta"),
+                        list,
+                        Integer.parseInt(pregunta.getString("resposta_correcta")),
+                        pregunta.getString("imatge"));
+                preguntas.add(addPregunta);
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }*/
 
 }
 
