@@ -314,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
                 CustomDialogFragment dialog = new CustomDialogFragment(
                         "No es posible conectar con el server\n Espera unos segundos y vuelve a probar",
                         "Reiniciar",
-                        "Cancelar",
+                        "Salir",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 // Acción positiva personalizada
