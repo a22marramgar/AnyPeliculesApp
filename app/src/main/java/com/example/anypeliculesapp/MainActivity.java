@@ -1,12 +1,15 @@
 package com.example.anypeliculesapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -37,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -48,6 +52,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String BASE_URL = "https://apiservice-u435.onrender.com";
     private static ApiService apiService;
 
     List<Pregunta> preguntas = new ArrayList<>();
@@ -71,15 +76,38 @@ public class MainActivity extends AppCompatActivity {
 
     int cornerFamily= CornerFamily.ROUNDED,topLeft=0,topRight=0,bottomLeft=0,bottomRight=0; //image corners
 
-    private int segundosCountdown = 30;
+    private final int segundosCountdown = 30;
+
+    ValueAnimator colorAnimation;
 
     Date startDate;
     Date endDate;
+
+    RadioGroup.OnCheckedChangeListener radioGroupListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
+            storeCheckedIndex();
+            if (checkedId != -1) {
+                enableRadiobuttons(false);
+                nextButton.setEnabled(true);
+                RadioButton button = ((RadioButton) radioGroup.getChildAt(preguntas.get(currentPregunta).getRespostaCorrecta()-1));
+                button.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.radio_selected_green));
+                if (selectedRespostes[currentPregunta] != -1
+                        && selectedRespostes[currentPregunta] + 1 == preguntas.get(currentPregunta).getRespostaCorrecta()) {
+
+                    Log.e("check", "Respuesta correcta");
+                } else if (selectedRespostes[currentPregunta] != -1) {
+                    Log.e("check", "respuesta incorrecta");
+                }
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         configurarApi();
         llamarApi();
@@ -87,30 +115,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void llamarApi() {
-
+        bindViews();
         // Realizar la llamada a getPreguntes
-        Call<JsonResponseModel> call = this.getApiService().getPreguntes();
+        Call<JsonResponseModel> call = getApiService().getPreguntes();
         Log.e("api","espero respuesta");
         call.enqueue(new Callback<JsonResponseModel>() {
 
 
             @Override
-            public void onResponse(Call<JsonResponseModel> call, Response<JsonResponseModel> response) {
+            public void onResponse(@NonNull Call<JsonResponseModel> call, @NonNull Response<JsonResponseModel> response) {
                 if (response.isSuccessful()) {
                     // Procesar la respuesta exitosa aquí
                     preguntas = new ArrayList<>();
                     currentPregunta = 0;
                     JsonResponseModel jsonResponse = response.body();
-                    for (Pregunta1 pregunta : jsonResponse.getPreguntes()) {
-                        List<String> respostes = new ArrayList<>();
-                        for(int i = 0; i<pregunta.getRespostes().size();i++){
-                            respostes.add(pregunta.getRespostes().get(i).getAny());
+                    if (jsonResponse != null) {
+                        for (Pregunta1 pregunta : jsonResponse.getPreguntes()) {
+                            List<String> respostes = new ArrayList<>();
+                            for(int i = 0; i<pregunta.getRespostes().size();i++){
+                                respostes.add(pregunta.getRespostes().get(i).getAny());
+                            }
+                            Pregunta addPregunta = new Pregunta(pregunta.getId(),pregunta.getPregunta(), respostes,pregunta.getResposta_correcta(),pregunta.getImatge());
+                            preguntas.add(addPregunta);
                         }
-                        Pregunta addPregunta = new Pregunta(pregunta.getId(),pregunta.getPregunta(), respostes,pregunta.getResposta_correcta(),pregunta.getImatge());
-                        preguntas.add(addPregunta);
+                    }else{
+                        CustomDialogFragment dialog = new CustomDialogFragment(
+                                "Parece que ha habido un error en el servidor" +
+                                        "\nPrueba más tarde o contacta con el desarrollador",
+                                "Reintentar",
+                                "Cancelar",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // Acción positiva
+                                        llamarApi();
+                                    }
+                                },
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // Acción negativa
+                                        finishAffinity();
+                                    }
+                                });
+                        dialog.setCancelable(false);
+                        dialog.show(getSupportFragmentManager(), "CUSTOM_DIALOG");
                     }
-
-                    bindViews();
                     startGame();
                 } else {
                     // Manejar error en la respuesta
@@ -119,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<JsonResponseModel> call, Throwable t) {
+            public void onFailure(@NonNull Call<JsonResponseModel> call, @NonNull Throwable t) {
                 // Manejar error en la solicitud
                 Log.e("api", "error: "+t);
                 CustomDialogFragment dialog = new CustomDialogFragment(
@@ -128,18 +176,17 @@ public class MainActivity extends AppCompatActivity {
                         "Cancelar",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                // Acción positiva personalizada
-                                // Por ejemplo, realizar alguna acción o cerrar la actividad
+                                // Acción positiva
                                 llamarApi();
                             }
                         },
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                // Acción negativa personalizada
-                                // Por ejemplo, realizar alguna otra acción o cerrar la actividad
+                                // Acción negativa
                                 finishAffinity();
                             }
                         });
+                dialog.setCancelable(false);
                 dialog.show(getSupportFragmentManager(), "CUSTOM_DIALOG");
             }
         });
@@ -147,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void configurarApi() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://apiservice-u435.onrender.com")
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -160,38 +207,14 @@ public class MainActivity extends AppCompatActivity {
         return apiService;
     }
 
-    RadioGroup.OnCheckedChangeListener radioGroupListener = new RadioGroup.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
-            storeCheckedIndex();
-            if (checkedId != -1) {
-                enableRadiobuttons(false);
-                nextButton.setEnabled(true);
-                //Crear un drawable verde
-                ((RadioButton) radioGroup.getChildAt(preguntas.get(currentPregunta).getRespostaCorrecta()-1))
-                        .setBackground(getResources().getDrawable(R.drawable.radio_selected_green));
-                if (selectedRespostes[currentPregunta] != -1
-                        && selectedRespostes[currentPregunta] + 1 == preguntas.get(currentPregunta).getRespostaCorrecta()) {
-
-                    Log.e("check", "Respuesta correcta");
-                } else if (selectedRespostes[currentPregunta] != -1) {
-                    Log.e("check", "respuesta incorrecta");
-                }
-            }
-        }
-    };
-
     private void startGame() {
         respostesCorrectes = new int[preguntas.size()];
         selectedRespostes = new int[preguntas.size()];
-        for(int i = 0; i<selectedRespostes.length; i++){
-            selectedRespostes[i] = -1;
-        }
+        Arrays.fill(selectedRespostes, -1);
         updateView();
-        //backButton.setEnabled(false);
-        nextButton.setEnabled(false);
         radioGroup.setOnCheckedChangeListener(radioGroupListener);
         nextButton.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("ResourceType")
             @Override
             public void onClick(View view) {
 
@@ -199,10 +222,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if(currentPregunta<preguntas.size()-1){
                     //Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
-                    ((RadioButton) radioGroup.getChildAt(preguntas.get(currentPregunta).getRespostaCorrecta()-1))
-                            .setBackground(getResources().getDrawable(R.drawable.radio_selector));
+                    RadioButton button = ((RadioButton) radioGroup.getChildAt(preguntas.get(currentPregunta).getRespostaCorrecta()-1));
+                    button.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.radio_selector));
                     currentPregunta++;
-                    if(currentPregunta==preguntas.size()-1) nextButton.setText("Enviar");
+                    if(currentPregunta==preguntas.size()-1) nextButton.setText(R.string.Send);
                     updateView();
                     nextButton.setEnabled(false);
                     selectStoredCheck();
@@ -210,29 +233,9 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     checkRespuestas();
                 }
-                /*if(currentPregunta!= 0){
-                    backButton.setEnabled(true);
-                }else{
-                    backButton.setEnabled(false);
-                }*/
             }
 
         });
-        /*backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                storeCheckedIndex();
-                //Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
-                currentPregunta--;
-                selectStoredCheck();
-                nextButton.setText("Siguiente");
-                updateView();
-                if(currentPregunta==0){
-                    backButton.setEnabled(false);
-                }
-
-            }
-        });*/
         startAnimation();
 
     }
@@ -265,13 +268,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkRespuestas() {
-        String respostes_buides = "";
+        StringBuilder respostes_buides = new StringBuilder();
         for(int i = 0; i<selectedRespostes.length;i++){
             if(selectedRespostes[i] == -1){
-                respostes_buides = respostes_buides + (i+1) + " ";
+                respostes_buides.append(i + 1).append(" ");
             }
         }
-        if(!(respostes_buides.equals(""))){
+        if(!(respostes_buides.toString().equals(""))){
             Snackbar snackbar = Snackbar.make((RelativeLayout)findViewById(R.id.mainlayout),
                     "Falten les respostes:\n"+respostes_buides,
                     Snackbar.LENGTH_LONG);
@@ -279,7 +282,6 @@ public class MainActivity extends AppCompatActivity {
         }else{
             finishGame();
         }
-
 
     }
 
@@ -304,13 +306,13 @@ public class MainActivity extends AppCompatActivity {
         }
         RespostesModel respostesmodel = new RespostesModel(respuestas,
                 (endDate.getTime()-startDate.getTime())/1000.0f);
-        Call<Void> call = this.getApiService().postRespuestas(respostesmodel);
+        Call<Void> call = getApiService().postRespuestas(respostesmodel);
 
         int finalContadorCorrectas = contadorCorrectas;
         call.enqueue(new Callback<Void>() {
 
             @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (response.isSuccessful()) {
                     // Procesar la respuesta exitosa aquí
                     Log.e("Respostes", "Respostes enviades");
@@ -318,21 +320,20 @@ public class MainActivity extends AppCompatActivity {
                     CustomDialogFragment dialog = new CustomDialogFragment(
                             mensaje,
                             "Jugar de nuevo",
-                            "Cancelar",
+                            "Salir",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
-                                    // Acción positiva personalizada
-                                    // Por ejemplo, realizar alguna acción o cerrar la actividad
+                                    // Acción positiva
                                     llamarApi();
                                 }
                             },
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
-                                    // Acción negativa personalizada
-                                    // Por ejemplo, realizar alguna otra acción o cerrar la actividad
+                                    // Acción negativa
                                     finishAffinity();
                                 }
                             });
+                    dialog.setCancelable(false);
                     dialog.show(getSupportFragmentManager(), "CUSTOM_DIALOG");
                 } else {
                     // Manejar error en la respuesta
@@ -341,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<Void> call, Throwable t) {
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
                 // Manejar error en la solicitud
                 Log.e("api", "error: "+t);
                 // Crear una instancia de CustomDialogFragment con mensajes y botones personalizados
@@ -358,8 +359,7 @@ public class MainActivity extends AppCompatActivity {
                         },
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                // Acción negativa personalizada
-                                // Por ejemplo, realizar alguna otra acción o cerrar la actividad
+                                // Acción negativa
                                 finishAffinity();
                             }
                         });
@@ -377,6 +377,14 @@ public class MainActivity extends AppCompatActivity {
         radioButton2.setText(pregunta.getRespostes().get(1).toString());
         radioButton3.setText(pregunta.getRespostes().get(2).toString());
         radioButton4.setText(pregunta.getRespostes().get(3).toString());
+        radioButton1.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.radio_selector));
+        radioButton2.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.radio_selector));
+        radioButton3.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.radio_selector));
+        radioButton4.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.radio_selector));
+        radioButton1.setEnabled(true);
+        radioButton2.setEnabled(true);
+        radioButton3.setEnabled(true);
+        radioButton4.setEnabled(true);
 
         //Image
         new DownloadImageTask((ImageView) findViewById(R.id.imageView))
@@ -385,7 +393,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void bindViews() {
         Typeface font = Typeface.createFromAsset(getAssets(), "Montserrat-Bold.otf");
-        //backButton = findViewById(R.id.backButton);
         nextButton = findViewById(R.id.nextButton);
         nomPeliTextView = findViewById(R.id.nomPeliTextView);
         radioGroup = findViewById(R.id.radiogroup);
@@ -400,20 +407,18 @@ public class MainActivity extends AppCompatActivity {
         radioButton3.setTypeface(font);
         radioButton4.setTypeface(font);
         nextButton.setTypeface(font);
-        //backButton.setTypeface(font);
+        nomPeliTextView.setText(R.string.Loading);
+        radioButton1.setText("...");
+        radioButton2.setText("...");
+        radioButton3.setText("...");
+        radioButton4.setText("...");
 
         imageView = findViewById(R.id.imageView);
         imageView.setShapeAppearanceModel(imageView.getShapeAppearanceModel().toBuilder()
                 .setAllCorners(cornerFamily,40).build());
     }
 
-    public void crearPregunta(int id, String nomPeli, List<String> respostestext, int resposta_correcta,String URLImage){
-
-        Pregunta pregunta = new Pregunta(id, nomPeli,respostestext, resposta_correcta,URLImage);
-        preguntas.add(pregunta);
-    }
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+    private static class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
 
         public DownloadImageTask(ImageView bmImage) {
@@ -442,14 +447,17 @@ public class MainActivity extends AppCompatActivity {
         ProgressBar mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mProgressBar.setMax(nomPeliTextView.getMaxWidth());
         ObjectAnimator progressAnimator = ObjectAnimator.ofInt(mProgressBar, "progress", 0, mProgressBar.getMax());
-        progressAnimator.setDuration(segundosCountdown*1000);
+        progressAnimator.setDuration(segundosCountdown* 1000L);
         progressAnimator.setInterpolator(new LinearInterpolator());
         progressAnimator.start();
 
-        int colorFrom = getResources().getColor(R.color.green);
-        int colorTo = getResources().getColor(R.color.strong_red);
-        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
-        colorAnimation.setDuration(segundosCountdown*1000); // milliseconds
+        int colorFrom = ContextCompat.getColor(this,R.color.green);
+        int colorTo = ContextCompat.getColor(this,R.color.strong_red);
+        if(colorAnimation != null){
+            colorAnimation.end();
+        }
+        colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+        colorAnimation.setDuration(segundosCountdown* 1000L); // milliseconds
         colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 
             @Override
@@ -457,15 +465,24 @@ public class MainActivity extends AppCompatActivity {
                 mProgressBar.setProgressTintList(ColorStateList.valueOf((int) animator.getAnimatedValue()));
                 if(mProgressBar.getProgress() == mProgressBar.getMax()){
                     Log.e("Time","se ha acabado el tiempo");
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
-
-// 2. Chain together various setter methods to set the dialog characteristics.
-                    builder.setMessage(R.string.dialog_msg)
-                            .setTitle(R.string.dialog_msg);
-
-// 3. Get the AlertDialog.
-                    AlertDialog dialog = builder.create();
-
+                    CustomDialogFragment dialog = new CustomDialogFragment(
+                            "Se ha acabdo el tiempo!",
+                            "Reintentar",
+                            "Salir",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // Acción positiva
+                                    llamarApi();
+                                }
+                            },
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // Acción negativa
+                                    finishAffinity();
+                                }
+                            });
+                    dialog.setCancelable(false);
+                    dialog.show(getSupportFragmentManager(), "CUSTOM_DIALOG");
                 }
             }
 
@@ -473,49 +490,6 @@ public class MainActivity extends AppCompatActivity {
         colorAnimation.start();
         startDate = new Date();
     }
-
-    /*private String loadJSONFromAsset() {
-        String json;
-        try {
-            InputStream inputStream = this.getAssets().open("preguntas.json");
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-            json = new String(buffer,"UTF-8");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        //Log.e("data",json);
-        return json;
-    }*/
-    /*private void leerJSON() {
-        try{
-            JSONObject obj = new JSONObject(loadJSONFromAsset());
-            JSONArray preguntes = obj.getJSONArray("preguntes");
-            for(int i = 0; i< preguntes.length(); i++){
-                JSONObject pregunta = preguntes.getJSONObject(i);
-                JSONArray respostes = pregunta.getJSONArray("respostes");
-                List<String> list = new ArrayList<String>();
-                for(int j = 0; j < respostes.length(); j++){
-                    JSONObject resposta = respostes.getJSONObject(j);
-
-                    list.add(resposta.getString("any"));
-
-                }
-                Pregunta addPregunta = new Pregunta(Integer.parseInt(pregunta.getString("id")),
-                        pregunta.getString("pregunta"),
-                        list,
-                        Integer.parseInt(pregunta.getString("resposta_correcta")),
-                        pregunta.getString("imatge"));
-                preguntas.add(addPregunta);
-            }
-        }catch (JSONException e){
-            e.printStackTrace();
-        }
-    }*/
 
 }
 

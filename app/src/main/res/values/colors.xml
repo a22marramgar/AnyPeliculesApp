@@ -10,5 +10,6 @@
     <color name="red">#A83737</color>
     <color name="strong_red">#FF0000</color>
     <color name="green">#19FF00</color>
+    <color name="dark_green">#1AA80A</color>
     <color name="yellow">#FFE700</color>
 </resources>

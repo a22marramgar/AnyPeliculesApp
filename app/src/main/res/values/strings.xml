@@ -3,4 +3,6 @@
     <string name="dialog_msg">No es posible conectar con el server\n Espera unos segundos y vuelve a probar</string>
     <string name="reiniciar">Reiniciar</string>
     <string name="cancel">Cancelar</string>
+    <string name="Loading">Cargando</string>
+    <string name="Send">Enviar</string>
 </resources>
