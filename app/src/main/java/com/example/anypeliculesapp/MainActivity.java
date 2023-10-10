@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 // Manejar error en la solicitud
                 Log.e("api", "error: "+t);
                 CustomDialogFragment dialog = new CustomDialogFragment(
-                        "No es posible conectar con el server\n Vuelve a probar en 15-30 segundos",
+                        "No es posible conectar con el server\nVuelve a probar en 15-30 segundos",
                         "Reintentar",
                         "Cancelar",
                         new DialogInterface.OnClickListener() {
@@ -160,6 +160,27 @@ public class MainActivity extends AppCompatActivity {
         return apiService;
     }
 
+    RadioGroup.OnCheckedChangeListener radioGroupListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
+            storeCheckedIndex();
+            if (checkedId != -1) {
+                enableRadiobuttons(false);
+                nextButton.setEnabled(true);
+                //Crear un drawable verde
+                ((RadioButton) radioGroup.getChildAt(preguntas.get(currentPregunta).getRespostaCorrecta()-1))
+                        .setBackground(getResources().getDrawable(R.drawable.radio_selected_green));
+                if (selectedRespostes[currentPregunta] != -1
+                        && selectedRespostes[currentPregunta] + 1 == preguntas.get(currentPregunta).getRespostaCorrecta()) {
+
+                    Log.e("check", "Respuesta correcta");
+                } else if (selectedRespostes[currentPregunta] != -1) {
+                    Log.e("check", "respuesta incorrecta");
+                }
+            }
+        }
+    };
+
     private void startGame() {
         respostesCorrectes = new int[preguntas.size()];
         selectedRespostes = new int[preguntas.size()];
@@ -167,34 +188,37 @@ public class MainActivity extends AppCompatActivity {
             selectedRespostes[i] = -1;
         }
         updateView();
-        backButton.setEnabled(false);
+        //backButton.setEnabled(false);
+        nextButton.setEnabled(false);
+        radioGroup.setOnCheckedChangeListener(radioGroupListener);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                //selectedRespostes[currentPregunta] = radioGroup.getCheckedRadioButtonId();
-                storeCheckedIndex();
 
 
                 if(currentPregunta<preguntas.size()-1){
                     //Log.e("data", selectedRespostes[0]+" "+selectedRespostes[1]+" "+selectedRespostes[2]+" "+selectedRespostes[3]+" "+selectedRespostes[4]+" "+selectedRespostes[5]+" "+selectedRespostes[6]+" "+selectedRespostes[7]+" "+selectedRespostes[8]+" "+selectedRespostes[9]);
+                    ((RadioButton) radioGroup.getChildAt(preguntas.get(currentPregunta).getRespostaCorrecta()-1))
+                            .setBackground(getResources().getDrawable(R.drawable.radio_selector));
                     currentPregunta++;
                     if(currentPregunta==preguntas.size()-1) nextButton.setText("Enviar");
+                    updateView();
+                    nextButton.setEnabled(false);
                     selectStoredCheck();
 
-                    updateView();
                 }else{
                     checkRespuestas();
                 }
-                if(currentPregunta!= 0){
+                /*if(currentPregunta!= 0){
                     backButton.setEnabled(true);
                 }else{
                     backButton.setEnabled(false);
-                }
+                }*/
             }
 
         });
-        backButton.setOnClickListener(new View.OnClickListener() {
+        /*backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 storeCheckedIndex();
@@ -208,17 +232,27 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
-        });
+        });*/
         startAnimation();
 
     }
 
     private void selectStoredCheck() {
+        radioGroup.setOnCheckedChangeListener(null);
         radioGroup.clearCheck();
+        radioGroup.setOnCheckedChangeListener(radioGroupListener);
+        enableRadiobuttons(true);
         if(selectedRespostes[currentPregunta] != -1) {
             RadioButton radiobutton = (RadioButton) radioGroup.getChildAt(selectedRespostes[currentPregunta]);
             radiobutton.setChecked(true);
         }
+    }
+
+    private void enableRadiobuttons(boolean b) {
+        radioButton1.setEnabled(b);
+        radioButton2.setEnabled(b);
+        radioButton3.setEnabled(b);
+        radioButton4.setEnabled(b);
     }
 
     private void storeCheckedIndex() {
@@ -312,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("api", "error: "+t);
                 // Crear una instancia de CustomDialogFragment con mensajes y botones personalizados
                 CustomDialogFragment dialog = new CustomDialogFragment(
-                        "No es posible conectar con el server\n Espera unos segundos y vuelve a probar",
+                        "No es posible conectar con el server\nEspera unos segundos y vuelve a probar",
                         "Reiniciar",
                         "Salir",
                         new DialogInterface.OnClickListener() {
@@ -351,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void bindViews() {
         Typeface font = Typeface.createFromAsset(getAssets(), "Montserrat-Bold.otf");
-        backButton = findViewById(R.id.backButton);
+        //backButton = findViewById(R.id.backButton);
         nextButton = findViewById(R.id.nextButton);
         nomPeliTextView = findViewById(R.id.nomPeliTextView);
         radioGroup = findViewById(R.id.radiogroup);
@@ -366,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
         radioButton3.setTypeface(font);
         radioButton4.setTypeface(font);
         nextButton.setTypeface(font);
-        backButton.setTypeface(font);
+        //backButton.setTypeface(font);
 
         imageView = findViewById(R.id.imageView);
         imageView.setShapeAppearanceModel(imageView.getShapeAppearanceModel().toBuilder()
