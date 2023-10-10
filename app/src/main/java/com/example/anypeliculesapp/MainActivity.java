@@ -288,6 +288,9 @@ public class MainActivity extends AppCompatActivity {
     private void finishGame() {
         //TODO end the game
         int contadorCorrectas = 0;
+        if(colorAnimation != null){
+            colorAnimation.end();
+        }
         endDate = new Date();
         List<RespostaModel> respuestas = new ArrayList<>();
         for(int i = 0; i<selectedRespostes.length; i++){
